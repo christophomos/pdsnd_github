@@ -1,0 +1,158 @@
+---
+title: "NYC Bike Sharing in 2017"
+output: html_notebook
+---
+
+I will explore data provided by [Motivate](https://www.motivateco.com/), a bike share service operating in NYC and other cities. 
+
+# Question 1: Which gender uses the bikeshare service most?
+
+``` {r}
+library("readr")
+library("dplyr")
+library("tidyr")
+library("lubridate")
+library("ggplot2")
+library("haven");
+
+ny = read_csv('new_york_city.csv');
+```
+
+```{r}
+head(ny)
+```
+First let's get some simple stats on gender usage:
+```{r}
+ny_gender <- ny %>%
+  drop_na(Gender) %>%
+  mutate(Gender = factor(Gender)) %>%
+  group_by(Gender) %>%
+  summarize(trips = n())
+
+ny_gender
+```
+So males took more trips than females. Now let's visualize that.
+```{r}
+ny %>%
+  drop_na(Gender) %>%
+  ggplot() +
+    aes(x = Gender) +
+    geom_bar() +
+    theme(panel.background = element_rect(fill = "white", color = "black"))
+```
+
+Now let's explore second and third questions, while continuing to look at usage by gender:
+
+# Question 2: Which age group uses the bikeshare service most in NY?
+# Question 3: Is usage increasing over time in NY?
+
+Let's group the NY data by gender and by 5-year age increments, dropping customers without age and/or gender. Then we'll count trips by month.
+
+First let's do some simple visualization:
+```{r}
+# Reference: https://stackoverflow.com/questions/35352914/floor-a-year-to-the-decade-in-r
+floor_five = function(year) {
+  year - (year %% 5)
+}
+
+ny_gender_and_age_usage <- ny %>%
+  drop_na(Gender, `Birth Year`) %>%
+  group_by(
+    Gender,
+    month = floor_date(`Start Time`, unit = "month"),
+    age_group = as_factor(floor_five(`Birth Year`))) %>%
+  summarise(n = n())
+
+ggplot(data = ny_gender_and_age_usage) +
+  aes(x = month, y = n, color = Gender) +
+  geom_line() +
+  facet_wrap(~age_group, nrow = 3) +
+  scale_color_manual(values = c('coral', 'dodgerblue'))
+```
+Since there are so few customers born 1955 or later, let's filter them out and clean up the x-axis. Then let's add some labels.
+```{r}
+ny_gender_and_age_usage <- ny %>%
+  drop_na(Gender, `Birth Year`) %>%
+  filter(`Birth Year` >= 1950 & `Birth Year` < 2000) %>%
+  group_by(
+    Gender,
+    month = floor_date(`Start Time`, unit = "month"),
+    age_group = factor(floor_five(`Birth Year`))) %>%
+  summarise(n = n())
+      
+ggplot(data = ny_gender_and_age_usage) +
+  aes(x = month, y = n, color = Gender) +
+  geom_line() +
+  facet_wrap(~age_group, ncol = 3) +
+  scale_color_manual(values = c('coral', 'dodgerblue')) +
+  labs(
+      titles = "Usage of bikeshare service in NY in 2017 broken into gender and age groups",
+      x = "Month",
+      y = "Number of trips")
+```
+We see that use of the service increased over time and and most of our customers were born between 1960 and 1990. Let's calculate some statistics to better quantify these three observations we've gleaned visually.
+
+Let's look at usage over time by itself:
+```{r}
+ny_usage <- ny %>%
+  select(Gender, `Birth Year`, `Trip Duration`) %>%
+  drop_na()
+
+head(ny_usage)
+```
+```{r}
+ggplot(data = ny_usage) +
+  aes(x = `Birth Year`, y = `Trip Duration`, color = Gender) +
+  geom_point(alpha = 0.3) +
+  ylim(0, 10000)
+```
+The scatterplot is another way to visualize the greater usage by men than women. Also, we see lots of males at the bottom left of the plot, so let's investigate that later.
+
+Let's look at the distribution of age on a histogram.
+```{r}
+ny_age_usage <- ny %>%
+  drop_na(`Birth Year`, Gender)
+
+require(scales)
+
+ggplot(data = ny_age_usage) +
+  aes(x = `Birth Year`) +
+  geom_histogram(bins = 30) +
+  scale_x_continuous(breaks = pretty_breaks(n = 7)) +
+  labs(title = "NY Bike Service Usage by Birth Year")
+```
+So usage peaks for users born in the mid-80's.
+
+From the scatter plot above, we saw some uneven distributions of usage in relation to age. So what are the differences in age distribution based on gender?
+```{r}
+ggplot(data = ny_age_usage) +
+  aes(x = `Birth Year`, fill = Gender) +
+  geom_histogram(bins = 30) +
+  scale_x_continuous(breaks = pretty_breaks(n = 7)) +
+  labs(title = "NY Bike Service Usage by Birth Year and Gender")
+```
+Eyeballing the histogram, we see that fewer females than males use the bike service, and that this is much more exaggerated for the birth years before 1960.
+
+Also, we see our peak age is users born around 1990. Let's see if there is any difference in the spread between men and women in terms of age.
+```{r}
+ggplot(data = ny_age_usage) +
+  aes(x = Gender, y = `Birth Year`) +
+  geom_boxplot() +
+  labs(title = "NY Bike Service Usage by Birth Year and Gender")
+```
+So female ridership has a greater spread and is slightly younger.
+
+# Conclusions
+
+1.  Which gender uses the bikeshare service most in NY?
+  *  Men do
+2.  Which age group uses the bikeshare service most in NY?
+  * There are few customers born before 1955
+  * Most were born between 1960 and 1990
+  * Peak is around 1990
+3.  Is usage increasing over time in NY?
+  * Yes
+  
+## Note:
+*  The gender difference in usage is more exaggerated for the birth years before 1960.
+*  Female ridership has a greater spread and is slightly younger.
