@@ -1,15 +1,11 @@
-### Date created
-Include the date you created this project and README file.
-
-### Project Title
-Replace the Project Title
+September 12, 2019
+### NYC Bike Sharing in 2017
 
 ### Description
-Describe what your project is about and what it does
+Project for R unit of Programming for Data Science with R Nanodegree Program. Highlights use of dplyr, ggplot and Github.
 
 ### Files used
-Include the files used
+R Markdown and csv database.
 
 ### Credits
-It's important to give proper credit. Add links to any repo that inspired you or blogposts you consulted.
-
+Thanks to Motivate (https://www.motivate.com) for providing the data.
