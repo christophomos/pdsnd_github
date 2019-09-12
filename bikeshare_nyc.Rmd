@@ -38,7 +38,8 @@ ny %>%
   ggplot() +
     aes(x = Gender) +
     geom_bar() +
-    theme(panel.background = element_rect(fill = "white", color = "black"))
+    theme(panel.background = element_rect(fill = "white", color = "black")) +
+    labs(title = "Trips taken by gender", y = "Number of trips")
 ```
 
 Now let's explore second and third questions, while continuing to look at usage by gender:
@@ -67,7 +68,8 @@ ggplot(data = ny_gender_and_age_usage) +
   aes(x = month, y = n, color = Gender) +
   geom_line() +
   facet_wrap(~age_group, nrow = 3) +
-  scale_color_manual(values = c('coral', 'dodgerblue'))
+  scale_color_manual(values = c('coral', 'dodgerblue')) +
+  labs(title = "Trips broken down by birth year and gender", y = "Number of trips")
 ```
 Since there are so few customers born 1955 or later, let's filter them out and clean up the x-axis. Then let's add some labels.
 ```{r}
@@ -95,16 +97,17 @@ We see that use of the service increased over time and and most of our customers
 Let's look at usage over time by itself:
 ```{r}
 ny_usage <- ny %>%
-  select(Gender, `Birth Year`, `Trip Duration`) %>%
+  select(Gender, `Birth Year`, `Trip Duration (minutes)`) %>%
   drop_na()
 
 head(ny_usage)
 ```
-```{r}
+```{r warning=FALSE}
 ggplot(data = ny_usage) +
   aes(x = `Birth Year`, y = `Trip Duration`, color = Gender) +
   geom_point(alpha = 0.3) +
-  ylim(0, 10000)
+  ylim(0, 10000) +
+  labs(title = "Trips duraction by gender and birth year", y = "Trip duration (minutes)")
 ```
 The scatterplot is another way to visualize the greater usage by men than women. Also, we see lots of males at the bottom left of the plot, so let's investigate that later.
 
@@ -119,7 +122,7 @@ ggplot(data = ny_age_usage) +
   aes(x = `Birth Year`) +
   geom_histogram(bins = 30) +
   scale_x_continuous(breaks = pretty_breaks(n = 7)) +
-  labs(title = "NY Bike Service Usage by Birth Year")
+  labs(title = "2017 NY Bike Service Usage by Birth Year", y = "Number of trips")
 ```
 So usage peaks for users born in the mid-80's.
 
@@ -129,7 +132,7 @@ ggplot(data = ny_age_usage) +
   aes(x = `Birth Year`, fill = Gender) +
   geom_histogram(bins = 30) +
   scale_x_continuous(breaks = pretty_breaks(n = 7)) +
-  labs(title = "NY Bike Service Usage by Birth Year and Gender")
+  labs(title = "NY Bike Service Usage by Birth Year and Gender", "Number of trips")
 ```
 Eyeballing the histogram, we see that fewer females than males use the bike service, and that this is much more exaggerated for the birth years before 1960.
 
