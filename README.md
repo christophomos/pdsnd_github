@@ -8,4 +8,4 @@ Project for R unit of Programming for Data Science with R Nanodegree Program. Hi
 R Markdown and csv database.
 
 ### Credits
-Thanks to Motivate https://www.motivateco.com for providing the data.
+Thanks to Motivate (https://www.motivate.com) for providing the data.
